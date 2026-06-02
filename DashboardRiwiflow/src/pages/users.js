@@ -1,4 +1,4 @@
-// --- PÁGINA GESTIÓN DE USUARIOS ---
+// --- USER MANAGEMENT PAGE ---
 
 import { getAllData, deleteTask, updateTask, deleteUser } from "../api.js";
 import { getOrBuildShell } from "../shell.js";
@@ -30,7 +30,7 @@ export async function renderUsers() {
   `;
   document.getElementById("createUserBtn").addEventListener("click", () => window.location.hash = "#create-user");
 
-  // Fetch combinado: trae users y tasks en paralelo
+  // Combined fetch: retrieves users and tasks in parallel
   const { users: allUsers, tasks: allTasks } = await getAllData();
   state.users = allUsers;
   state.tasks = allTasks;
@@ -90,7 +90,7 @@ export async function renderUsers() {
     </div>
   `;
 
-  // --- Eventos ---
+  // --- Events ---
   tableContainer.querySelectorAll(".btn-edit-user").forEach(btn =>
     btn.addEventListener("click", () => window.location.hash = `#edit-user?id=${btn.dataset.id}`)
   );
@@ -103,7 +103,7 @@ export async function renderUsers() {
       const userTasks = state.tasks.filter(t => String(t.userId) === String(userId));
 
       if (taskCount > 0) {
-        // Usuario con tareas: modal con 3 opciones
+        // User with tasks: modal with 3 options
         const otherUsers = state.users.filter(u => String(u.id) !== String(userId));
 
         await ConfirmModal({
@@ -116,7 +116,9 @@ export async function renderUsers() {
               variant: "danger",
               onClick: async () => {
                 try {
-                  await Promise.all(userTasks.map(t => deleteTask(t.id)));
+                  for (const t of userTasks) {
+                    await deleteTask(t.id);
+                  }
                   await deleteUser(userId);
                   Toast.show(`Usuario y ${taskCount} tarea${taskCount !== 1 ? "s" : ""} eliminados.`, "success");
                   await renderUsers();
@@ -141,7 +143,9 @@ export async function renderUsers() {
               variant: "secondary",
               onClick: async () => {
                 try {
-                  await Promise.all(userTasks.map(t => updateTask(t.id, { userId: null })));
+                  for (const t of userTasks) {
+                    await updateTask(t.id, { userId: null });
+                  }
                   await deleteUser(userId);
                   Toast.show(`Usuario eliminado. ${taskCount} tarea${taskCount !== 1 ? "s" : ""} sin asignar.`, "success");
                   await renderUsers();
@@ -151,7 +155,7 @@ export async function renderUsers() {
           ]
         });
       } else {
-        // Sin tareas: confirmación simple
+        // No tasks: simple confirmation
         await ConfirmModal({
           title: `Eliminar a ${userName}`,
           message: "¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.",

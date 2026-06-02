@@ -1,11 +1,18 @@
-// --- PÁGINA DASHBOARD (KANBAN BOARD) ---
+// --- DASHBOARD PAGE (KANBAN BOARD) ---
 
 import { getAllData } from "../api.js";
 import { getOrBuildShell } from "../shell.js";
 import { KanbanBoard } from "../components/kanban.js";
 import state from "../state.js";
 
-export async function renderDashboard() {
+export async function renderDashboard(skipFetch = false) {
+  const boardContainer = document.getElementById("boardContainer");
+  if (skipFetch && boardContainer) {
+    boardContainer.innerHTML = "";
+    boardContainer.appendChild(KanbanBoard(state.tasks, state.users, state.currentUser, () => renderDashboard(true)));
+    return;
+  }
+
   const pageContent = getOrBuildShell();
   pageContent.innerHTML = `
     <div class="flex-1 flex flex-col px-gutter py-md overflow-hidden h-full">
@@ -23,12 +30,14 @@ export async function renderDashboard() {
     </div>
   `;
 
-  // Fetch combinado: trae users y tasks en paralelo
+  // Combined fetch: retrieves users and tasks in parallel
   const { users, tasks } = await getAllData();
   state.tasks = tasks;
   state.users = users;
 
-  const boardContainer = document.getElementById("boardContainer");
-  boardContainer.innerHTML = "";
-  boardContainer.appendChild(KanbanBoard(state.tasks, state.users, state.currentUser, renderDashboard));
+  const newBoardContainer = document.getElementById("boardContainer");
+  if (newBoardContainer) {
+    newBoardContainer.innerHTML = "";
+    newBoardContainer.appendChild(KanbanBoard(state.tasks, state.users, state.currentUser, () => renderDashboard(true)));
+  }
 }

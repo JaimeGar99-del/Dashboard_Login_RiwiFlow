@@ -1,4 +1,4 @@
-// --- SIDEBAR DE NAVEGACIÓN ---
+// --- NAVIGATION SIDEBAR ---
 
 import { clearSession } from "../api.js";
 

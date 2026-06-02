@@ -1,13 +1,13 @@
-// --- SHELL: Layout persistente (sidebar + topbar + pageContent) ---
+// --- SHELL: Persistent layout (sidebar + topbar + pageContent) ---
 
 import { renderSidebar } from "./components/sidebar.js";
 import { escHtml, initials } from "./utils.js";
 import state from "./state.js";
 
 /**
- * Construye o reutiliza el layout principal de la aplicación.
- * Solo refresca el sidebar si el shell ya existe.
- * @returns {HTMLElement} El contenedor #pageContent
+ * Builds or reuses the main application layout.
+ * Only refreshes the sidebar if the shell already exists.
+ * @returns {HTMLElement} The #pageContent container
  */
 export function getOrBuildShell() {
   const appElement = document.getElementById("app");
@@ -23,7 +23,7 @@ export function getOrBuildShell() {
 
   appElement.innerHTML = `
     <div id="layout" class="bg-background text-on-background overflow-hidden h-screen flex relative">
-      <div class="pointer-events-none absolute inset-0 overflow-hidden z-0">
+      <div class="pointer-events-none absolute inset-0 overflow-hidden z-0 dark:hidden">
         <div style="position:absolute;top:-12%;right:-8%;width:42%;height:42%;background:rgba(235,221,255,0.35);filter:blur(100px);border-radius:50%"></div>
         <div style="position:absolute;bottom:-12%;left:-8%;width:32%;height:32%;background:rgba(227,225,237,0.25);filter:blur(90px);border-radius:50%"></div>
         <div style="position:absolute;top:40%;left:30%;width:25%;height:25%;background:rgba(83,0,183,0.06);filter:blur(80px);border-radius:50%"></div>
@@ -38,6 +38,7 @@ export function getOrBuildShell() {
             </div>
           </div>
           <div class="flex items-center gap-4 ml-4">
+            <button id="themeToggleBtn" class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-colors">dark_mode</button>
             <button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-colors">notifications</button>
             <div class="flex items-center gap-sm">
               <div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center border border-outline-variant">
@@ -55,15 +56,37 @@ export function getOrBuildShell() {
     </div>
   `;
   document.getElementById("sidebarContainer").appendChild(renderSidebar(state.currentUser));
+
+  const themeToggleBtn = document.getElementById("themeToggleBtn");
+  const updateThemeButtonIcon = () => {
+    const isDark = document.documentElement.classList.contains("dark");
+    themeToggleBtn.textContent = isDark ? "light_mode" : "dark_mode";
+  };
+  updateThemeButtonIcon();
+
+  themeToggleBtn.addEventListener("click", () => {
+    const isDark = document.documentElement.classList.contains("dark");
+    if (isDark) {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
+      localStorage.setItem("riwiflow_theme", "light");
+    } else {
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
+      localStorage.setItem("riwiflow_theme", "dark");
+    }
+    updateThemeButtonIcon();
+  });
+
   return document.getElementById("pageContent");
 }
 
 /**
- * Construye el layout de páginas de formulario con encabezado y botón "atrás".
- * @param {string} title - Título del formulario
- * @param {string} subtitle - Subtítulo descriptivo
- * @param {string} backHash - Hash al que navegar al presionar "atrás"
- * @returns {HTMLElement} El contenedor #formArea
+ * Builds the layout for form pages with a header and back button.
+ * @param {string} title - Form title
+ * @param {string} subtitle - Descriptive subtitle
+ * @param {string} backHash - Hash to navigate to when pressing "back"
+ * @returns {HTMLElement} The #formArea container
  */
 export function buildFormLayout(title, subtitle, backHash = "#dashboard") {
   const pageContent = getOrBuildShell();

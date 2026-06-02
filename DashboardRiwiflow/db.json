@@ -8,25 +8,25 @@
       "role": "admin"
     },
     {
-      "id": "2",
-      "name": "Coder User",
-      "email": "coder@mail.com",
+      "id": "3",
+      "name": "Jaime",
+      "email": "jaime@mail.com",
+      "password": "123456",
+      "role": "admin"
+    },
+    {
+      "id": "4",
+      "name": "Sayder",
+      "email": "sayder@mail.com",
       "password": "123456",
       "role": "coder"
     },
     {
-      "name": "Jaime",
-      "email": "jaime@mail.com",
+      "id": "qKkGTtYDIQI",
+      "name": "Pepito44",
+      "email": "pepito@mail.com",
       "password": "123456",
-      "role": "admin",
-      "id": "5ksRc6UYvc4"
-    },
-    {
-      "name": "Sayder",
-      "email": "say@riwi.io",
-      "password": "123456",
-      "role": "coder",
-      "id": "SjrtH4ukh-s"
+      "role": "coder"
     }
   ],
   "tasks": [
@@ -35,21 +35,105 @@
       "title": "Build Login Screen",
       "description": "Create login page with responsive CSS and input validations",
       "status": "in progress",
-      "userId": "SjrtH4ukh-s"
+      "userId": "4"
     },
     {
+      "id": "2",
       "title": "Database Schema Setup",
       "description": "Initialize JSON server with sample user and task records",
       "status": "in review",
-      "userId": "5ksRc6UYvc4",
-      "id": "AolMvTfbmlA"
+      "userId": "3"
     },
     {
+      "id": "3",
       "title": "Create User Interface Components",
       "description": "Create reusable sidebar, task cards, and board UI elements",
       "status": "done",
-      "userId": "2",
-      "id": "-lITqn84-cs"
+      "userId": "4"
+    },
+    {
+      "id": "4",
+      "title": "Implement Password Recovery",
+      "description": "Create forgot password workflow with email validation",
+      "status": "pending",
+      "userId": "4"
+    },
+    {
+      "id": "5",
+      "title": "Optimize Dashboard Rendering",
+      "description": "Improve rendering performance for large task collections",
+      "status": "in progress",
+      "userId": "4"
+    },
+    {
+      "id": "6",
+      "title": "Design Notification System",
+      "description": "Add toast notifications for user actions and API responses",
+      "status": "pending",
+      "userId": "4"
+    },
+    {
+      "id": "7",
+      "title": "Create Settings Page",
+      "description": "Build user settings interface with theme preferences",
+      "status": "todo",
+      "userId": "4"
+    },
+    {
+      "id": "8",
+      "title": "Add Search Functionality",
+      "description": "Implement task filtering and live search behavior",
+      "status": "done",
+      "userId": "4"
+    },
+    {
+      "id": "9",
+      "title": "Refactor API Module",
+      "description": "Separate API calls into reusable service functions",
+      "status": "pending",
+      "userId": "4"
+    },
+    {
+      "id": "10",
+      "title": "Implement Drag and Drop",
+      "description": "Allow tasks to be moved between board columns",
+      "status": "todo",
+      "userId": "4"
+    },
+    {
+      "id": "11",
+      "title": "Fix Mobile Layout Issues",
+      "description": "Resolve responsive problems on smaller devices",
+      "status": "in progress",
+      "userId": "4"
+    },
+    {
+      "id": "12",
+      "title": "Add Dark Mode",
+      "description": "Create dark theme styles and toggle functionality",
+      "status": "pending",
+      "userId": "4"
+    },
+    {
+      "id": "13",
+      "title": "Improve Accessibility",
+      "description": "Add ARIA labels and keyboard navigation support",
+      "status": "todo",
+      "userId": "4"
+    },
+    {
+      "id": "14",
+      "title": "Create Activity Logs",
+      "description": "Track user actions and task updates in the system",
+      "status": "in review",
+      "userId": "qKkGTtYDIQI"
+    },
+    {
+      "id": "15",
+      "title": "Add Pagination",
+      "description": "Split large task lists into multiple pages",
+      "status": "pending",
+      "userId": "4"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

@@ -1,13 +1,17 @@
-// --- FUNCIONES UTILITARIAS ---
+// --- UTILITY FUNCTIONS ---
 
-/** Sanitiza strings para prevenir XSS al inyectar en innerHTML */
-export const escHtml = (s = "") =>
-  String(s)
+/** Sanitizes strings to prevent XSS when injecting into innerHTML */
+export const escHtml = (s = "") => {
+  if (s === null || s === undefined) return "";
+  return String(s)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+};
 
-/** Extrae las iniciales de un nombre (máximo 2 caracteres) */
-export const initials = (name = "") =>
-  name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+/** Extracts initials from a name (maximum 2 characters) */
+export const initials = (name = "") => {
+  if (!name || typeof name !== "string") return "";
+  return name.split(" ").map(w => w[0] || "").join("").slice(0, 2).toUpperCase();
+};

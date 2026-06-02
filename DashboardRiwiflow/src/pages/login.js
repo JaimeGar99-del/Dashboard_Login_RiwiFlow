@@ -1,4 +1,4 @@
-// --- PÁGINA DE LOGIN ---
+// --- LOGIN PAGE ---
 
 import { loginUser, saveSession } from "../api.js";
 import { INPUT_CLASS, BTN_PRIMARY } from "../constants.js";
@@ -14,9 +14,11 @@ export function renderLogin() {
             <h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">Riwiflow</h1>
             <p class="font-body-md text-body-md text-on-surface-variant">Sign in to your professional workspace</p>
           </div>
+
           <!-- Login Card -->
           <div class="bg-surface-container-lowest border border-outline-variant p-xl rounded-xl space-y-lg transition-all">
             <form class="space-y-lg" id="loginForm">
+
               <!-- Email Field -->
               <div class="space-y-sm">
                 <label class="font-label-md text-label-md text-on-surface" for="email">Email address</label>
@@ -24,18 +26,22 @@ export function renderLogin() {
                   <input class="${INPUT_CLASS}" id="email" type="email" placeholder="name@company.com" required />
                 </div>
               </div>
+
               <!-- Password Field -->
               <div class="space-y-sm">
                 <div class="flex justify-between items-center">
                   <label class="font-label-md text-label-md text-on-surface" for="password">Password</label>
                   <a class="font-label-md text-label-md text-primary hover:underline transition-all cursor-pointer">Forgot password?</a>
                 </div>
+
                 <div class="relative">
                   <input class="${INPUT_CLASS}" id="password" type="password" placeholder="••••••••" required />
                 </div>
               </div>
+
               <!-- Error Message -->
               <p class="text-error font-body-sm text-body-sm min-h-[20px]" id="errorMsg"></p>
+
               <!-- CTA Button -->
               <div class="pt-sm">
                 <button class="w-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-md px-lg rounded-lg transition-all active:scale-[0.98] duration-150 flex items-center justify-center gap-sm" type="submit">
@@ -43,16 +49,20 @@ export function renderLogin() {
                   <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
                 </button>
               </div>
+
             </form>
+
             <!-- Divider -->
             <div class="relative py-sm">
               <div class="absolute inset-0 flex items-center">
                 <div class="w-full border-t border-outline-variant"></div>
               </div>
+
               <div class="relative flex justify-center text-label-sm">
                 <span class="bg-surface-container-lowest px-md text-outline font-label-sm uppercase tracking-widest">or continue with</span>
               </div>
             </div>
+
             <!-- Secondary Auth Actions -->
             <div class="grid grid-cols-1 gap-md">
               <button type="button" class="w-full flex items-center justify-center gap-md py-md border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors duration-200">
@@ -61,6 +71,7 @@ export function renderLogin() {
               </button>
             </div>
           </div>
+
           <!-- Footer Links -->
           <div class="text-center">
             <p class="font-body-sm text-body-sm text-on-surface-variant">
@@ -70,8 +81,9 @@ export function renderLogin() {
           </div>
         </div>
       </main>
+
       <!-- Visual Background Element -->
-      <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+      <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none dark:hidden">
         <div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary-fixed/20 blur-[120px] rounded-full"></div>
         <div class="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-primary-fixed/10 blur-[100px] rounded-full"></div>
       </div>
@@ -80,25 +92,33 @@ export function renderLogin() {
 
   document.getElementById("loginForm").addEventListener("submit", async e => {
     e.preventDefault();
+
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
     const errorMsg = document.getElementById("errorMsg");
+
     errorMsg.textContent = "";
+
     const btn = e.target.querySelector("[type=submit]");
+
     btn.disabled = true;
     btn.textContent = "Signing in...";
 
     try {
       const user = await loginUser(email, password);
+
       if (!user) {
         errorMsg.textContent = "Invalid credentials. Please try again.";
         btn.disabled = false;
         btn.innerHTML = `Login <span class="material-symbols-outlined text-[18px]">arrow_forward</span>`;
         return;
       }
+
       saveSession(user);
       state.currentUser = user;
+
       window.location.hash = "#dashboard";
+
     } catch (err) {
       errorMsg.textContent = err.message || "Connection error.";
       btn.disabled = false;

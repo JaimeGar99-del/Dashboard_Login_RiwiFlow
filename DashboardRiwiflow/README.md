@@ -1,10 +1,10 @@
 # Riwiflow
 
-**Riwiflow** is a vanilla JavaScript task management SPA (Single Page Application) with a Kanban board, role-based access control, and full user management. It runs against a local [json-server](https://github.com/typicode/json-server) REST API.
+**Riwiflow** is a vanilla JavaScript task management SPA (Single Page Application) featuring a Kanban board, role-based access control, dark/light theme switching, and full user & task CRUD. It runs against a local [json-server](https://github.com/typicode/json-server) REST API.
 
 ## Team
 
-| Name | 
+| Name |
 |---|
 | Jaime García |
 | Sayder Carreño |
@@ -29,10 +29,14 @@
 - 🔐 Email + password authentication with session persistence via `localStorage`
 - 📋 Kanban board with four columns: **To Do**, **In Progress**, **In Review**, **Done**
 - 🖱️ Drag-and-drop task movement between columns
-- 👥 Full user management table (create, edit, delete)
-- 🛡️ Role-based access control (RBAC) — single source of truth in `permissions.js`
-- 🔔 Toast notification system
-- 🎨 Material Design 3-inspired UI with Tailwind CSS
+- 👥 Full user management table (create, edit, delete with task reassignment)
+- 🛡️ Role-based access control — **admin** sees everything, **coder** sees their own tasks
+- 🔔 Toast notification system for success, error, and informational feedback
+- 🌗 Dark / Light theme toggle with matte Material Design 3 dark palette
+- 🎨 Material Design 3-inspired UI with Tailwind CSS and CSS custom properties
+- ⚡ Version-agnostic API layer with automatic fallback for `json-server` v0.x and v1.x
+- 🆔 Auto-incrementing numeric user IDs
+- 📧 Duplicate email validation on user creation and editing
 
 ---
 
@@ -41,38 +45,47 @@
 | Layer | Technology |
 |---|---|
 | Language | Vanilla JavaScript (ES Modules) |
-| Styling | Tailwind CSS v3 (CDN) + Material Symbols |
+| Styling | Tailwind CSS v3 (CDN) + Material Symbols Outlined |
 | Fonts | Inter (Google Fonts) |
 | Backend | json-server (mock REST API) |
-| Routing | Custom hash-free SPA router |
-| State | In-memory pub/sub store with cache invalidation |
+| Bundler | Vite 8 |
+| Routing | Hash-based SPA router (`main.js`) |
+| State | In-memory singleton object (`src/state.js`) |
 
 ---
 
 ## Project Structure
 
 ```
-riwiflow/
-├── index.html              # Entry point
-├── main.js                 # Boot, route registration, Tailwind config
-├── db.json                 # json-server database
+DashboardRiwiflow/
+├── index.html                  # HTML entry point
+├── main.js                     # Boot, hash router, Tailwind + fonts injection
+├── db.json                     # json-server database (users + tasks)
+├── package.json                # Vite dev dependency
 │
 └── src/
-    ├── credentials.js      # API base URL, fetch wrapper, auth store, service functions
-    ├── permissions.js      # RBAC — single source of truth for all access rules
-    ├── router.js           # SPA router with regex params and role guards
-    ├── store.js            # Pub/sub cache for tasks and users
-    ├── components.js       # Shared UI: Toast, TaskCard, KanbanBoard, Sidebar
+    ├── api.js                  # REST API: fetch wrapper, session, CRUD services
+    ├── config.js               # Tailwind config injection + global CSS (light/dark)
+    ├── constants.js            # Reusable CSS class-string constants
+    ├── state.js                # Global in-memory state (currentUser, tasks, users)
+    ├── shell.js                # Persistent layout: sidebar + top bar + page container
+    ├── utils.js                # Helpers: escHtml(), initials()
+    │
+    ├── components/
+    │   ├── kanban.js           # KanbanBoard: four-column board with drag-and-drop
+    │   ├── modal.js            # ConfirmModal + showReassignModal (delete user flow)
+    │   ├── sidebar.js          # Sidebar navigation with active state and theme toggle
+    │   ├── taskCard.js         # TaskCard: draggable card with edit/delete actions
+    │   └── toast.js            # Toast notification singleton
     │
     └── pages/
-        ├── _shell.js       # Persistent layout (sidebar + topbar); page content swaps
-        ├── login.js        # Login page
-        ├── dashboard.js    # Kanban board
-        ├── createTask.js   # New task form
-        ├── editTask.js     # Edit task form
-        ├── users.js        # User management table
-        ├── createUser.js   # New user form
-        └── editUser.js     # Edit user form
+        ├── login.js            # Login page with animated background
+        ├── dashboard.js        # Dashboard: loads data → renders KanbanBoard
+        ├── createTask.js       # Create task form (admin only)
+        ├── editTask.js         # Edit task form
+        ├── users.js            # User management table with delete + reassign modal
+        ├── createUser.js       # Create user form with auto-increment ID
+        └── editUser.js         # Edit user form with duplicate email check
 ```
 
 ---
@@ -87,64 +100,62 @@ riwiflow/
 ### Installation
 
 ```bash
-# 1. Install json-server
+# 1. Install dependencies
+npm install
+
+# 2. Install json-server globally (if not already installed)
 npm install -g json-server
 
-# 2. Start the mock API (port 3000)
+# 3. Start the mock API (port 3000)
 json-server --watch db.json --port 3000
 
-# 3. Serve the frontend (any static server, e.g. Vite or serve)
-npx serve .
-# or
-npx vite
+# 4. In a separate terminal, start the Vite dev server
+npm run dev
 ```
 
-The app expects the API at `http://localhost:3000`. To change this, edit `BASE_URL` in `src/credentials.js`.
+The app expects the API at `http://localhost:3000`. To change this, edit `BASE_URL` in `src/api.js`.
 
 ---
 
 ## Roles & Permissions
 
-Riwiflow has three roles arranged in a hierarchy: **admin > modder > coder**.
-
-All permission logic lives in `src/permissions.js` via the `can(user, action, resource)` function.
+Riwiflow has two roles: **admin** and **coder**.
 
 ### Permission Matrix
 
-| Action | Admin | Modder | Coder |
-|---|:---:|:---:|:---:|
-| View dashboard | ✅ | ✅ | ✅ |
-| Create task | ✅ | ✅ | ❌ |
-| Edit any task | ✅ | ✅ ¹ | ❌ |
-| Edit own task | ✅ | ✅ | ✅ |
-| Delete task | ✅ | ✅ ¹ | ❌ |
-| Drag tasks | ✅ | ✅ ¹ | Own only |
-| View users page | ✅ | ✅ | ❌ |
-| Create user | ✅ | ✅ ² | ❌ |
-| Edit user | ✅ | ✅ ¹ | ❌ |
-| Delete user | ✅ ³ | ✅ ¹ ³ | ❌ |
-| Change user role | ✅ | ✅ ¹ ⁴ | ❌ |
+| Action | Admin | Coder |
+|---|:---:|:---:|
+| View dashboard | ✅ | ✅ |
+| View all tasks on board | ✅ | ✅ |
+| Create task | ✅ | ❌ |
+| Edit any task | ✅ | ❌ |
+| Delete task | ✅ | ❌ |
+| Drag tasks between columns | ✅ | ✅ |
+| View users page | ✅ | ❌ |
+| Create user | ✅ | ❌ |
+| Edit user | ✅ | ❌ |
+| Delete user (with task reassignment) | ✅ | ❌ |
 
-> ¹ Cannot act on **admin** accounts or tasks assigned to admins.  
-> ² Modders can only create users with the **coder** role.  
-> ³ Cannot delete their own account.  
-> ⁴ Modders can only assign **coder** or **modder** roles; the **admin** option is hidden.
+When an admin deletes a user who has assigned tasks, a modal appears with three options:
+1. **Reassign** tasks to another user
+2. **Delete** all tasks belonging to that user
+3. **Unassign** tasks (remove the userId, keep the tasks)
 
 ---
 
 ## Pages & Routes
 
-| Route | Page | Access |
+| Hash Route | Page | Access |
 |---|---|---|
-| `/` | Login | Public (redirects to `/dashboard` if logged in) |
-| `/dashboard` | Kanban Board | All authenticated users |
-| `/create-task` | Create Task Form | Admin, Modder |
-| `/edit-task/:id` | Edit Task Form | Checked inside handler via `can()` |
-| `/users` | User Management Table | Admin, Modder |
-| `/create-user` | Create User Form | Admin, Modder |
-| `/edit-user/:id` | Edit User Form | Checked inside handler via `can()` |
+| `#login` | Login | Public (redirects to `#dashboard` if already logged in) |
+| `#dashboard` | Kanban Board | All authenticated users |
+| `#create-task` | Create Task Form | Admin only |
+| `#edit-task?id=:id` | Edit Task Form | Admin only |
+| `#users` | User Management Table | Admin only |
+| `#create-user` | Create User Form | Admin only |
+| `#edit-user?id=:id` | Edit User Form | Admin only |
 
-Routes without an explicit role list perform fine-grained permission checks inside their page handler and redirect to `/dashboard` on failure.
+Unauthenticated requests are redirected to `#login`. Non-admin users attempting admin routes are redirected to `#dashboard`.
 
 ---
 
@@ -152,26 +163,31 @@ Routes without an explicit role list perform fine-grained permission checks insi
 
 ### Router
 
-`src/router.js` implements a lightweight client-side router. Routes are registered with `addRoute(path, handler, { roles? })`. Dynamic segments like `/edit-task/:id` are converted to named-capture regexes. On navigation, the router runs the role guard first, then extracts params and calls the handler.
+`main.js` implements a hash-based SPA router. On `hashchange`, it parses the hash path and optional query parameters (e.g., `#edit-task?id=5`), checks authentication and role guards, then calls the appropriate page renderer.
 
 ### Shell
 
-`src/pages/_shell.js` manages the persistent layout (sidebar + top bar). Only the `#pageContent` div is swapped on each navigation, avoiding full re-renders of the chrome.
+`src/shell.js` manages the persistent layout — sidebar navigation and top bar. Only the `#pageContent` container is replaced on each navigation, avoiding full re-renders of the application chrome.
 
-### Store
+### State
 
-`src/store.js` is a simple pub/sub in-memory cache. It prevents duplicate API calls across pages and lets components subscribe to `tasks:changed` / `users:changed` events to re-render reactively. Call `invalidateTasks()` or `invalidateUsers()` after any mutation to bust the cache.
+`src/state.js` exports a plain object holding `currentUser`, `tasks`, and `users`. Pages mutate this state directly and use local rendering with `skipFetch` optimization to avoid unnecessary API calls after CRUD operations.
 
-### Permissions
+### API Layer
 
-`src/permissions.js` exports a single `can(currentUser, action, resource)` function. Resources are either plain strings (`'task'`, `'user'`, `'users'`) for page-level guards or objects (`{ userId, assignedRole }` for tasks, `{ id, role }` for users) for entity-level checks.
+`src/api.js` provides a version-agnostic fetch wrapper. The `getTasks()` function attempts `_expand=user` first (json-server v0.x), falls back to `_embed=user`, and finally fetches plain `/tasks` — ensuring compatibility across json-server versions without silent failures.
+
+### Theme System
+
+`src/config.js` injects CSS custom properties for both light and dark palettes following Material Design 3. The dark theme uses a matte black/purple scheme with no glow effects. Theme is toggled by adding/removing the `.dark` class on `<html>` and persisted in `localStorage`.
 
 ---
 
 ## Default Users
 
-| Name | Email | Password | Role |
-|---|---|---|---|
-| Admin User | admin@mail.com | 123456 | admin |
-| Coder User | coder@mail.com | 123456 | coder |
-| Jaime | jaime@mail.com | 123456 | modder |
+| ID | Name | Email | Password | Role |
+|---|---|---|---|---|
+| 1 | Admin User | admin@mail.com | 123456 | admin |
+| 2 | Coder User | coder@mail.com | 123456 | coder |
+| 3 | Jaime | jaime@mail.com | 123456 | admin |
+| 4 | Sayder | sayder@mail.com | 123456 | coder |

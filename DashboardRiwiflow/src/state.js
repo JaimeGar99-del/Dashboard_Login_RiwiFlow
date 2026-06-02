@@ -1,4 +1,4 @@
-// --- ESTADO GLOBAL DE LA APLICACIÓN ---
+// --- GLOBAL STATE ---
 const state = {
   currentUser: null,
   tasks: [],

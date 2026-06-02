@@ -1,4 +1,4 @@
-// --- SISTEMA DE NOTIFICACIONES TOAST ---
+// --- TOAST NOTIFICATION SYSTEM ---
 
 import { escHtml } from "../utils.js";
 

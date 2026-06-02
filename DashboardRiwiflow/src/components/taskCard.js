@@ -3,6 +3,7 @@
 import { deleteTask } from "../api.js";
 import { escHtml, initials } from "../utils.js";
 import { Toast } from "./toast.js";
+import state from "../state.js";
 
 const STATUS_STYLES = {
   "todo":        { badge: "bg-surface-container-high text-on-surface-variant", border: "" },
@@ -12,7 +13,7 @@ const STATUS_STYLES = {
 };
 
 export function TaskCard(task, usersList, currentUser, onDelete, onDragStart) {
-  const assigned = usersList.find(u => String(u.id) === String(task.userId));
+  const assigned = task.user || usersList.find(u => String(u.id) === String(task.userId));
   const isOwner = String(task.userId) === String(currentUser.id);
   const isAdmin = currentUser.role === "admin";
   const canEdit = isAdmin || isOwner;
@@ -63,7 +64,8 @@ export function TaskCard(task, usersList, currentUser, onDelete, onDragStart) {
     try {
       await deleteTask(task.id);
       Toast.show("Task deleted successfully.", "success");
-      onDelete();
+      state.tasks = state.tasks.filter(t => String(t.id) !== String(task.id));
+      onDelete(true);
     } catch (err) {
       Toast.show(err.message, "error");
     }

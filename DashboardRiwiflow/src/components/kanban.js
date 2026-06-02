@@ -54,7 +54,8 @@ export function KanbanBoard(taskList, userList, currentUser, onRefresh) {
       try {
         await updateTask(draggedTaskId, { status: id });
         Toast.show("Task moved successfully.", "success");
-        onRefresh();
+        task.status = id;
+        onRefresh(true);
       } catch (err) {
         Toast.show(err.message, "error");
       }
@@ -70,7 +71,7 @@ export function KanbanBoard(taskList, userList, currentUser, onRefresh) {
       const colTasks = taskList.filter(t => {
         if (t.status !== id) return false;
         if (!q) return true;
-        const assigned = userList.find(u => String(u.id) === String(t.userId));
+        const assigned = t.user || userList.find(u => String(u.id) === String(t.userId));
         return t.title.toLowerCase().includes(q) || (t.description && t.description.toLowerCase().includes(q)) || (assigned && assigned.name.toLowerCase().includes(q));
       });
       counter.textContent = colTasks.length;

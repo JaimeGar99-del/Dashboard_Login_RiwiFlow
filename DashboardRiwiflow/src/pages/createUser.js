@@ -1,6 +1,6 @@
-// --- PÁGINA CREAR USUARIO ---
+// --- CREATE USER PAGE ---
 
-import { createUser } from "../api.js";
+import { createUser, getUsers } from "../api.js";
 import { buildFormLayout } from "../shell.js";
 import { INPUT_CLASS, BTN_PRIMARY, BTN_SECONDARY, FORM_CARD } from "../constants.js";
 import { Toast } from "../components/toast.js";
@@ -50,9 +50,25 @@ export async function renderCreateUser() {
     btn.disabled = true;
     btn.textContent = "Creating...";
     try {
+      const email = document.getElementById("userEmail").value.trim();
+      const existingUsers = await getUsers();
+      if (existingUsers.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+        throw new Error("A user with this email already exists.");
+      }
+
+      // Calculate next integer ID starting from 1
+      let nextId = 1;
+      if (existingUsers.length > 0) {
+        const ids = existingUsers.map(u => parseInt(u.id, 10)).filter(id => !isNaN(id));
+        if (ids.length > 0) {
+          nextId = Math.max(...ids) + 1;
+        }
+      }
+
       await createUser({
+        id: String(nextId),
         name: document.getElementById("userName").value.trim(),
-        email: document.getElementById("userEmail").value.trim(),
+        email: email,
         password: document.getElementById("userPassword").value.trim(),
         role: document.getElementById("userRole").value,
       });

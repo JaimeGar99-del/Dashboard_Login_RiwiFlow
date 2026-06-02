@@ -1,4 +1,4 @@
-// --- MODAL DE CONFIRMACIÓN REUTILIZABLE ---
+// --- REUSABLE CONFIRMATION MODAL ---
 
 import { escHtml } from "../utils.js";
 import { INPUT_CLASS, BTN_PRIMARY, BTN_SECONDARY } from "../constants.js";
@@ -6,7 +6,7 @@ import { updateTask, deleteUser } from "../api.js";
 import { Toast } from "./toast.js";
 
 /**
- * Muestra un modal de confirmación con acciones personalizadas.
+ * Displays a confirmation modal with custom actions.
  * @param {Object} opts
  * @param {string} opts.title
  * @param {string} opts.message
@@ -75,12 +75,12 @@ export function ConfirmModal({ title, message, actions = [] }) {
 }
 
 /**
- * Modal para reasignar las tareas de un usuario antes de eliminarlo.
- * @param {string} userId - ID del usuario a eliminar
- * @param {string} userName - Nombre del usuario
- * @param {Array} userTasks - Tareas del usuario
- * @param {Array} otherUsers - Otros usuarios disponibles
- * @param {Function} onComplete - Callback al completar
+ * Modal to reassign a user's tasks before deleting them.
+ * @param {string} userId - ID of the user to delete
+ * @param {string} userName - Name of the user
+ * @param {Array} userTasks - User tasks
+ * @param {Array} otherUsers - Other available users
+ * @param {Function} onComplete - Callback executed on completion
  */
 export function showReassignModal(userId, userName, userTasks, otherUsers, onComplete) {
   return new Promise((resolve) => {
@@ -95,22 +95,22 @@ export function showReassignModal(userId, userName, userTasks, otherUsers, onCom
             <span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings:'FILL' 1">swap_horiz</span>
           </div>
           <div>
-            <h3 class="font-title-sm text-title-sm text-on-surface">Reasignar tareas</h3>
+            <h3 class="font-title-sm text-title-sm text-on-surface">Reassign tasks</h3>
             <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
-              Selecciona el usuario que recibirá las ${userTasks.length} tarea${userTasks.length !== 1 ? "s" : ""} de <strong>${escHtml(userName)}</strong>.
+              Select the user who will receive the ${userTasks.length} task${userTasks.length !== 1 ? "s" : ""} from <strong>${escHtml(userName)}</strong>.
             </p>
           </div>
         </div>
         <div class="space-y-sm">
-          <label class="font-label-md text-label-md text-on-surface">Reasignar a:</label>
+          <label class="font-label-md text-label-md text-on-surface">Reassign to:</label>
           <select id="reassignSelect" class="${INPUT_CLASS}">
             ${otherUsers.map(u => `<option value="${u.id}">${escHtml(u.name)} (${u.role})</option>`).join("")}
           </select>
         </div>
         <div class="flex gap-sm justify-end pt-sm border-t border-outline-variant">
-          <button id="reassignCancelBtn" class="${BTN_SECONDARY}">Cancelar</button>
+          <button id="reassignCancelBtn" class="${BTN_SECONDARY}">Cancel</button>
           <button id="reassignConfirmBtn" class="${BTN_PRIMARY}">
-            <span class="material-symbols-outlined text-[18px]">check</span>Confirmar
+            <span class="material-symbols-outlined text-[18px]">check</span>Confirm
           </button>
         </div>
       </div>
@@ -130,10 +130,12 @@ export function showReassignModal(userId, userName, userTasks, otherUsers, onCom
       const targetId = overlay.querySelector("#reassignSelect").value;
       close();
       try {
-        await Promise.all(userTasks.map(t => updateTask(t.id, { userId: targetId })));
+        for (const t of userTasks) {
+          await updateTask(t.id, { userId: targetId });
+        }
         await deleteUser(userId);
         const targetUser = otherUsers.find(u => String(u.id) === String(targetId));
-        Toast.show(`Tareas reasignadas a ${targetUser?.name || "usuario"} y usuario eliminado.`, "success");
+        Toast.show(`Tasks reassigned to ${targetUser?.name || "user"} and user deleted.`, "success");
         await onComplete();
       } catch (err) {
         Toast.show(err.message, "error");

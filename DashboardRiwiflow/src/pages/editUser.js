@@ -1,6 +1,6 @@
-// --- PÁGINA EDITAR USUARIO ---
+// --- EDIT USER PAGE ---
 
-import { getUserById, updateUser, saveSession } from "../api.js";
+import { getUserById, updateUser, saveSession, getUsers } from "../api.js";
 import { buildFormLayout } from "../shell.js";
 import { INPUT_CLASS, BTN_PRIMARY, BTN_SECONDARY, FORM_CARD } from "../constants.js";
 import { escHtml } from "../utils.js";
@@ -54,15 +54,21 @@ export async function renderEditUser(id) {
     const btn = e.target.querySelector("[type=submit]");
     btn.disabled = true;
     btn.textContent = "Saving...";
+    const email = document.getElementById("userEmail").value.trim();
     const patch = {
       name: document.getElementById("userName").value.trim(),
-      email: document.getElementById("userEmail").value.trim(),
+      email: email,
       role: document.getElementById("userRole").value
     };
     const pass = document.getElementById("userPassword").value.trim();
     if (pass) patch.password = pass;
 
     try {
+      const existingUsers = await getUsers();
+      if (existingUsers.some(u => u.email.toLowerCase() === email.toLowerCase() && String(u.id) !== String(id))) {
+        throw new Error("A user with this email already exists.");
+      }
+
       await updateUser(id, patch);
       Toast.show("User updated successfully.", "success");
       if (String(id) === String(state.currentUser.id)) {
